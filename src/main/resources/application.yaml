@@ -1,3 +1,29 @@
 spring:
   application:
     name: email
+
+  mail:
+    host: ${SMTP_HOST:email-smtp.ap-south-1.amazonaws.com}
+    port: ${SMTP_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+    from: ${MAIL_FROM}
+    alias: ${MAIL_ALIAS}
+
+    security:
+      ssl:
+        trust: ${SMTP_SSL_TRUST:email-smtp.ap-south-1.amazonaws.com}
+        protocols: ${SMTP_SSL_PROTOCOLS:TLSv1.3 TLSv1.2}
+
+      starttls:
+        enable: ${SMTP_STARTTLS_ENABLE:true}
+        required: ${SMTP_STARTTLS_REQUIRED:true}
+
+    performance:
+      pool: ${SMTP_POOL:true}
+      connection-timeout: ${SMTP_CONNECTION_TIMEOUT:5000}
+      timeout: ${SMTP_TIMEOUT:5000}
+      write-timeout: ${SMTP_WRITE_TIMEOUT:5000}
+
+    debug: ${SMTP_DEBUG:false}
