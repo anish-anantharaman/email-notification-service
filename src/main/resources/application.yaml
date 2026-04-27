@@ -27,3 +27,7 @@ spring:
       write-timeout: ${SMTP_WRITE_TIMEOUT:5000}
 
     debug: ${SMTP_DEBUG:false}
+
+springdoc:
+  swagger-ui:
+    operationsSorter: alpha

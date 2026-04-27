@@ -3,19 +3,21 @@ package com.anish.email.service.impl;
 import com.anish.email.config.properties.EmailProperties;
 import com.anish.email.dto.AttachmentDto;
 import com.anish.email.dto.EmailRequestDto;
+import com.anish.email.dto.TemplateEmailRequestDto;
 import com.anish.email.service.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,6 +28,8 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender javaMailSender;
 
     private final EmailProperties emailProperties;
+
+    private final SpringTemplateEngine springTemplateEngine;
 
     @Override
     @Async("asyncExecutor")
@@ -76,5 +80,37 @@ public class EmailServiceImpl implements EmailService {
             log.error("Error sending email with attachment: {}",
                     e.getMessage(), e);
         }
+    }
+
+    @Override
+    @Async("asyncExecutor")
+    public void sendTemplateEmail(TemplateEmailRequestDto templateEmailRequestDto) {
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            String htmlContent = createEmailContext(templateEmailRequestDto.templateContent());
+            for(String email: templateEmailRequestDto.emails()) {
+                MimeMessageHelper mimeMessageHelper =
+                        new MimeMessageHelper(mimeMessage, Boolean.TRUE);
+                mimeMessageHelper.setFrom(emailProperties.from());
+                mimeMessageHelper.setTo(email);
+                mimeMessageHelper.setSubject(templateEmailRequestDto.subject());
+                mimeMessageHelper.setText(htmlContent, Boolean.TRUE);
+                javaMailSender.send(mimeMessage);
+            }
+            log.info("Template email sent successfully");
+        } catch(Exception e) {
+            log.error("Error sending template email: {}", e.getMessage(), e);
+        }
+    }
+
+    private String createEmailContext(Map<String, Object> templateContent) {
+        Context context = new Context();
+
+        // Map implementation is done to provide flexibility when defining template context
+        for(Map.Entry<String, Object> entry : templateContent.entrySet()) {
+            context.setVariable(entry.getKey(), entry.getValue());
+        }
+
+        return springTemplateEngine.process("email-template", context);
     }
 }
