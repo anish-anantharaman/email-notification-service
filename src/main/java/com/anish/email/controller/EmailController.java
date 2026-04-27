@@ -5,6 +5,7 @@ import com.anish.email.annotation.CommonErrorResponses;
 import com.anish.email.dto.ApiResponseDto;
 import com.anish.email.dto.AttachmentDto;
 import com.anish.email.dto.EmailRequestDto;
+import com.anish.email.dto.TemplateEmailRequestDto;
 import com.anish.email.exception.AttachmentException;
 import com.anish.email.service.EmailService;
 import com.anish.email.service.validator.AttachmentValidator;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,7 +48,7 @@ public class EmailController {
     @AcceptedResponse
     @Operation(
             summary = "Send plain email",
-            description = "Queues an email for asynchronous sending to specified recipients"
+            description = "Queues a plain email for asynchronous sending to specified recipients"
     )
     @PostMapping(path = "/plain", consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
@@ -65,6 +67,10 @@ public class EmailController {
 
     @CommonErrorResponses
     @AcceptedResponse
+    @Operation(
+            summary = "Send plain email with attachments",
+            description = "Queues a plain email with attachment(s) for asynchronous sending to specified recipients"
+    )
     @PostMapping(path = "/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> sendEmailWithAttachments(
@@ -110,4 +116,41 @@ public class EmailController {
         return ResponseEntity.accepted().body(response);
     }
 
+    @CommonErrorResponses
+    @AcceptedResponse
+    @Operation(
+            summary = "Send templated email",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                                                {
+                                                  "emails": ["user1@gmail.com"],
+                                                  "subject": "Application Received",
+                                                  "templateContent": {
+                                                    "imageUrl": "https://www.fico.com/sites/default/files/styles/lg/public/2024-05/AdobeStock_629603644.jpeg.webp?itok=0HuY-TzI",
+                                                    "name": "William",
+                                                    "message": "We’ve received your U.S. income tax return submission. Our tax professionals are reviewing your information to ensure accuracy and compliance with IRS requirements. If any additional details are needed, we will contact you promptly. You’ll be notified once your return is ready for the next step.",
+                                                    "senderName": "Gardner Rich & Co.",
+                                                    "year": "2026"
+                                                  }
+                                                }
+                                            """
+                            )
+                    )
+            )
+    )
+    @PostMapping(path = "/template", consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> sendTemplateEmail(
+            @Valid @RequestBody TemplateEmailRequestDto templateEmailRequestDto) {
+
+        emailService.sendTemplateEmail(templateEmailRequestDto);
+        ApiResponseDto response = new ApiResponseDto(HttpStatus.ACCEPTED.value(),
+                HttpStatus.ACCEPTED.getReasonPhrase(),
+                Constants.CommonConstants.EMAIL_RESPONSE_MESSAGE,
+                Boolean.TRUE);
+        return ResponseEntity.accepted().body(response);
+    }
 }
