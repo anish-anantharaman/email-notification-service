@@ -23,7 +23,16 @@ public record TemplateEmailRequestDto(
 
         @Schema(
                 description = "Dynamic key-value pairs used to populate the email template",
-                type = "object"
+                implementation = Object.class,
+                example = """
+                    {
+                      "imageUrl": "https://example.com/img.png",
+                      "name": "William",
+                      "message": "Hello world",
+                      "senderName": "Team",
+                      "year": "2026"
+                    }
+                    """
         )
         @NotEmpty
         Map<@NotBlank String, @NotNull Object> templateContent
