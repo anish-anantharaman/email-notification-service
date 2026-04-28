@@ -91,7 +91,7 @@ public class EmailServiceImpl implements EmailService {
             for(String email: templateEmailRequestDto.emails()) {
                 MimeMessageHelper mimeMessageHelper =
                         new MimeMessageHelper(mimeMessage, Boolean.TRUE);
-                mimeMessageHelper.setFrom(emailProperties.from());
+                mimeMessageHelper.setFrom(emailProperties.from(), emailProperties.alias());
                 mimeMessageHelper.setTo(email);
                 mimeMessageHelper.setSubject(templateEmailRequestDto.subject());
                 mimeMessageHelper.setText(htmlContent, Boolean.TRUE);
