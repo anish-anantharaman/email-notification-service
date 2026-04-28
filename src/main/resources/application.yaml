@@ -9,7 +9,7 @@ spring:
     password: ${MAIL_PASSWORD}
 
     from: ${MAIL_FROM}
-    alias: ${MAIL_ALIAS}
+    alias: ${MAIL_ALIAS:Email Service}
 
     security:
       ssl:
